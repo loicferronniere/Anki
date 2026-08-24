@@ -480,7 +480,7 @@ nav svg{width:23px; height:23px;}
       </div>
       <p>Choisir un fichier</p>
       <span>.apkg (Anki) &middot; .csv &middot; .txt</span>
-      <input type="file" id="fileInput" accept=".apkg,.csv,.txt">
+      <input type="file" id="fileInput">
     </div>
 
     <label class="field-label">Ou coller une liste (mot ; traduction, un par ligne)</label>
@@ -949,6 +949,13 @@ async function handleFile(file) {
   try {
     let items;
     if (file.name.toLowerCase().endsWith('.apkg')) {
+      if (typeof JSZip === 'undefined') {
+        throw new Error("la librairie de décompression n'a pas pu être chargée (vérifie ta connexion).");
+      }
+      if (typeof initSqlJs === 'undefined') {
+        throw new Error("la librairie de lecture Anki n'a pas pu être chargée (vérifie ta connexion).");
+      }
+      importStatus.textContent = 'Décompression du deck Anki…';
       items = await parseApkg(file);
     } else {
       const text = await file.text();
@@ -964,7 +971,8 @@ async function handleFile(file) {
     showPreview();
     importStatus.textContent = '';
   } catch (err) {
-    importStatus.textContent = "Erreur : " + err.message;
+    console.error(err);
+    importStatus.textContent = "Erreur : " + (err && err.message ? err.message : err);
   }
 }
 
