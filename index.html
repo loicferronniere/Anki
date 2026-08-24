@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Vocabulaire</title>
+<meta name="description" content="Révision de vocabulaire par répétition espacée, import de decks Anki (.apkg)">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#F2EEE6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Vocabulaire">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+
+<!-- Import .apkg (Anki) : dézippage + lecture SQLite, tout côté navigateur -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.7.0/sql-wasm.js"></script>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow" id="deckCount">0 mot</p>
+  <h1>Vocabulaire</h1>
+</header>
+
+<main>
+
+  <!-- RÉVISER -->
+  <section class="view active" id="view-reviser">
+    <div class="ring-row">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="27" fill="none" stroke="#E9E1D2" stroke-width="7"/>
+        <circle id="ringProgress" cx="32" cy="32" r="27" fill="none" stroke="url(#g)" stroke-width="7"
+          stroke-linecap="round" stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F49F31"/>
+            <stop offset="100%" stop-color="#541807"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div>
+        <div class="ring-num" id="ringNum">0 / 0 cartes</div>
+        <div class="ring-label">revues aujourd'hui</div>
+      </div>
+    </div>
+
+    <div id="reviewArea"></div>
+  </section>
+
+  <!-- IMPORTER -->
+  <section class="view" id="view-importer">
+    <div class="dropzone" id="dropzone">
+      <div class="icon-circle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F49F31" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      </div>
+      <p>Glisser un fichier ici</p>
+      <span>.apkg (Anki) · .csv · .txt</span>
+      <input type="file" id="fileInput" accept=".apkg,.csv,.txt">
+    </div>
+
+    <label class="field-label">Ou coller une liste (mot ; traduction, un par ligne)</label>
+    <textarea id="pasteArea" placeholder="j'ai faim ; I'm hungry&#10;je suis joyeux ; I'm happy"></textarea>
+
+    <div class="preview" id="previewBox" style="display:none;">
+      <div class="preview-head">
+        <span id="previewName"></span>
+        <span id="previewCount"></span>
+      </div>
+      <div id="previewRows"></div>
+    </div>
+
+    <div class="import-status" id="importStatus"></div>
+    <button class="import-btn" id="importBtn" disabled>Importer</button>
+  </section>
+
+  <!-- MES LISTES -->
+  <section class="view" id="view-listes">
+    <div id="deckList"></div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-ic" style="background:rgba(244,159,49,0.18)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B5761F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
+        </div>
+        <div class="num" id="statStreak">0</div>
+        <div class="label">jours de série</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic" style="background:rgba(84,24,7,0.10)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#541807" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V10M12 19V4M20 19v-7"/></svg>
+        </div>
+        <div class="num" id="statTotal">0</div>
+        <div class="label">révisions totales</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav>
+  <button class="active" data-view="view-reviser">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="13" height="16" rx="2.5"/><path d="M9 3h9a2 2 0 0 1 2 2v13"/></svg>
+    Réviser
+  </button>
+  <button data-view="view-importer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+    Importer
+  </button>
+  <button data-view="view-listes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V10M12 19V4M20 19v-7"/></svg>
+    Mes listes
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/srs.js"></script>
+<script src="js/apkg-import.js"></script>
+<script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+
+</body>
+</html>
