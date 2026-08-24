@@ -1,13 +1,10 @@
-const CACHE_NAME = 'vocab-app-v1';
+const CACHE_NAME = 'vocab-app-v2';
 const ASSETS = [
   './',
   './index.html',
-  './css/style.css',
-  './js/srs.js',
-  './js/apkg-import.js',
-  './js/app.js',
-  './fonts/Chillax-Variable.ttf',
   './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
 self.addEventListener('install', (event) => {
